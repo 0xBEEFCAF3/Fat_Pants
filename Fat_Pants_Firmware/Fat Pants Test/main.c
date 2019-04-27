@@ -50,8 +50,8 @@
 // Define the globals for the USB data in the USB RAM of the PIC18F*550
 #pragma udata
 #pragma udata USB_VARIABLES=0x480
-unsigned char ReceivedDataBuffer[8];
-unsigned char ToSendDataBuffer[8];
+unsigned char ReceivedDataBuffer[64];
+unsigned char ToSendDataBuffer[64];
 #pragma udata
 
 USB_HANDLE USBOutHandle = 0;
@@ -179,7 +179,7 @@ void lowPriorityISRCode()
 }
 
 // String for creating debug messages
-char debugString[64];
+//char debugString[64];
 
 // Main program entry point
 void main(void)
@@ -193,19 +193,19 @@ void main(void)
     #endif
 	
 	// Initialise the debug log functions
-    debugInitialise();
+//    debugInitialise();
     
     // Show that we are up and running
     mStatusLED0_on();
 	
 //	sprintf(debugString, "USB Generic HID Demonstration 3");
-	debugOut(debugString);
+//	debugOut(debugString);
 
 //	sprintf(debugString, "(C)2011 Simon Inns - http://www.waitingforfriday.com");
-	debugOut(debugString);
+//	debugOut(debugString);
 	
 //	sprintf(debugString, "USB Device Initialised.");
-	debugOut(debugString);
+//	debugOut(debugString);
     
 	// Main processing loop
     while(1)
@@ -312,15 +312,15 @@ void processUsbCommands(void)
 		        // Transmit the response to the host
                 if(!HIDTxHandleBusy(USBInHandle))
 				{
-					USBInHandle = HIDTxPacket(HID_EP,(BYTE*)&ToSendDataBuffer[0],8);
+					USBInHandle = HIDTxPacket(HID_EP,(BYTE*)&ToSendDataBuffer[0],64);
 				}
 				break;
 				
 			// Place application specific commands here:
 			
             case 0x80:  // Toggle the LED
-            	sprintf(debugString, "Received command 0x80 from host - Toggle LED");
-				debugOut(debugString);
+//            	sprintf(debugString, "Received command 0x80 from host - Toggle LED");
+//				debugOut(debugString);
 
 				// Toggle the LED0
 				mStatusLED0_Toggle();
@@ -332,7 +332,7 @@ void processUsbCommands(void)
 				// Transmit the response to the host
                 if(!HIDTxHandleBusy(USBInHandle))
 				{
-					USBInHandle = HIDTxPacket(HID_EP,(BYTE*)&ToSendDataBuffer[0],8);
+					USBInHandle = HIDTxPacket(HID_EP,(BYTE*)&ToSendDataBuffer[0],64);
 				}
             	break;
             	
@@ -343,7 +343,7 @@ void processUsbCommands(void)
 				// Transmit the response to the host
                 if(!HIDTxHandleBusy(USBInHandle))
 				{
-					USBInHandle = HIDTxPacket(HID_EP,(BYTE*)&ToSendDataBuffer[0],8);
+					USBInHandle = HIDTxPacket(HID_EP,(BYTE*)&ToSendDataBuffer[0],64);
 				}
             	break;
 
@@ -352,7 +352,7 @@ void processUsbCommands(void)
 		}
 		 
         // Re-arm the OUT endpoint for the next packet
-        USBOutHandle = HIDRxPacket(HID_EP,(BYTE*)&ReceivedDataBuffer,8);
+        USBOutHandle = HIDRxPacket(HID_EP,(BYTE*)&ReceivedDataBuffer,64);
   	}
 }
 
@@ -401,7 +401,7 @@ void USBCBInitEP(void)
     USBEnableEndpoint(HID_EP,USB_IN_ENABLED|USB_OUT_ENABLED|USB_HANDSHAKE_ENABLED|USB_DISALLOW_SETUP);
     
     // Re-arm the OUT endpoint for the next packet
-    USBOutHandle = HIDRxPacket(HID_EP,(BYTE*)&ReceivedDataBuffer,8);
+    USBOutHandle = HIDRxPacket(HID_EP,(BYTE*)&ReceivedDataBuffer,64);
 }
 
 // Send resume call-back
