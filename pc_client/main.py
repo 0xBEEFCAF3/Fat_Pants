@@ -3,23 +3,32 @@ import usb.core
 import usb.util
 import sys
 
+def fat_write(message):
+    """ Formats stdout print """
+    print("==================== {:s} ====================\n".format(message))
+
+def write_to_screen():
+    fat_write("Write to the Screen")
+    pass
+
+def toggle_light():
+    fat_write("Toggling Light on AN0")
+    pass
 
 if __name__ == '__main__':
-    print("==================== Welcome to Fat Pants ====================")
-    # find USB devices
-    dev = usb.core.find(find_all=True)
-    print(dev)
-    # loop through devices, printing vendor and product ids in decimal and hex
-    for cfg in dev:
-        print('Decimal VendorID=' + str(cfg.idVendor) + ' & ProductID=' + str(cfg.idProduct) + '\n')
-        print('Hexadecimal VendorID=' + hex(cfg.idVendor) + ' & ProductID=' + hex(cfg.idProduct) + '\n\n')
-
-    exit(1)        
+    fat_write("Welcome to Fat Pants")
     dev = usb.core.find(idVendor=0x04d8, idProduct=0x0042)
     if dev is None:
-        raise ValueError('Device not found')
+        raise ValueError('Device not found') 
 
-    print("Fat Pants Found!")
+    fat_write("Fat Pants Found!")
+
+    commands = {1:write_to_screen,2:toggle_light}
+    while 1:
+        fat_write("Enter '1' to write Enter '2' to toggle light")
+        user_input = int(input())
+        commands[user_input]()
+
 
     dev.set_configuration()
 
@@ -39,5 +48,3 @@ if __name__ == '__main__':
 
     # write the data
     ep.write('test')
-
-        
