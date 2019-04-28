@@ -13,7 +13,7 @@ def write_to_screen():
 
 def toggle_light():
     fat_write("Toggling Light on AN0")
-    pass
+    ep.write('\x80')
 
 if __name__ == '__main__':
     fat_write("Welcome to Fat Pants")
@@ -22,14 +22,7 @@ if __name__ == '__main__':
         raise ValueError('Device not found') 
 
     fat_write("Fat Pants Found!")
-
-    commands = {1:write_to_screen,2:toggle_light}
-    while 1:
-        fat_write("Enter '1' to write Enter '2' to toggle light")
-        user_input = int(input())
-        commands[user_input]()
-
-
+    #config
     dev.set_configuration()
 
     # get an endpoint instance
@@ -44,7 +37,12 @@ if __name__ == '__main__':
             usb.util.endpoint_direction(e.bEndpointAddress) == \
             usb.util.ENDPOINT_OUT)
 
+
+
     assert ep is not None
 
-    # write the data
-    ep.write('test')
+    commands = {1:write_to_screen,2:toggle_light}
+    while 1:
+       fat_write("Enter '1' to write Enter '2' to toggle light")
+       user_input = int(input())
+       commands[user_input]()
