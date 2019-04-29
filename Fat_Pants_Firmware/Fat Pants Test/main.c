@@ -106,6 +106,128 @@ void USBCBSendResume(void);
 void highPriorityISRCode();
 void lowPriorityISRCode();
 
+/*I2C LIBRARY*/
+
+#define SDA_PIN PORTBbits.RB1
+#define SCL_PIN PORTBbits.RB0	
+#define SDA_DIR TRISBbits.RB1
+#define SCL_DIR TRISBbits.RB0
+
+unsigned char i2cReadByte(void);
+void i2cWriteByte(unsigned char);
+void i2cNack(void);
+void i2cAck(void);
+void i2cStart(void);
+void i2cStop(void);
+void i2cHighSda(void);
+void i2cLowSda(void);
+void i2cHighScl(void);
+void i2cLowScl(void);
+
+#define FCY 48000000.0
+#define __delay_us(x) Delay10TCYx((x*(FCY/1000000.0))/10.0)
+
+unsigned char i2cReadByte(void)
+{
+   unsigned char inByte, n;
+   i2cHighSda();
+   for (n=0; n<8; n++)
+   {
+      i2cHighScl();
+
+      if (SDA_PIN)
+         inByte = (inByte << 1) | 0x01; // msbit first
+      else
+         inByte = inByte << 1;
+      i2cLowScl();
+   }
+   return(inByte);
+}
+
+void i2cWriteByte(unsigned char outByte)
+{
+   unsigned char n;
+   for(n=0; n<8; n++)
+   {
+      if(outByte&0x80)
+         i2cHighSda();
+      else
+         i2cLowSda();
+      i2cHighScl();
+      i2cLowScl();
+      outByte = outByte << 1;
+   }
+   i2cHighSda();
+}
+
+void i2cWriteBytes(char* buf, int num_bytes)
+{
+    int i;
+    for (i = 0; i < num_bytes; i++) {
+        i2cWriteByte(buf[i]);
+    }
+}
+
+void i2cNack(void)
+{
+   i2cHighScl();
+   i2cLowScl();		// bring data high and clock
+}
+
+void i2cAck(void)
+{
+   i2cLowSda();	
+   i2cHighScl();
+   i2cLowScl();
+   i2cHighSda();		// bring data low and clock
+}
+
+
+void i2c_start(void)
+{
+   i2cLowScl();
+   i2cHighSda();
+   i2cHighScl();	
+   i2cLowSda();
+   i2cLowScl();		// bring SDA low while SCL is high
+}
+
+void i2cStop(void)
+{
+   i2cLowScl();
+   i2cLowSda();
+   i2cHighScl();
+   i2cHighSda();		// bring SDA high while SCL is high
+}
+
+void i2cHighSda(void)
+{
+   SDA_DIR = 1;		// bring SDA to high impedance
+    __delay_us(5);
+}
+
+void i2cLowSda(void)
+{
+   SDA_PIN = 0;
+   SDA_DIR = 0;		// output a logic zero
+   __delay_us(5);
+}
+
+void i2cHighScl(void)
+{
+   SCL_DIR = 1;		// bring SCL to high impedance
+    __delay_us(5);
+}
+
+void i2cLowScl(void)
+{
+   SCL_PIN = 0;		
+   SCL_DIR = 0;
+    __delay_us(5);
+}
+
+
+
 // Remap vectors for compatibilty with Microchip USB boot loaders
 #if defined(PROGRAMMABLE_WITH_USB_HID_BOOTLOADER)
 	#define REMAPPED_RESET_VECTOR_ADDRESS			0x1000
