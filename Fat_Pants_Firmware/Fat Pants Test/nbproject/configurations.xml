@@ -5,7 +5,6 @@
                    displayName="Header Files"
                    projectFiles="true">
       <itemPath>HardwareProfile.h</itemPath>
-      <itemPath>debug.h</itemPath>
       <itemPath>usb.h</itemPath>
       <itemPath>usb_ch9.h</itemPath>
       <itemPath>usb_common.h</itemPath>
@@ -26,7 +25,6 @@
                    displayName="Source Files"
                    projectFiles="true">
       <itemPath>main.c</itemPath>
-      <itemPath>debug.c</itemPath>
       <itemPath>usb_descriptors.c</itemPath>
       <itemPath>usb_function_hid.c</itemPath>
       <itemPath>usb_device.c</itemPath>

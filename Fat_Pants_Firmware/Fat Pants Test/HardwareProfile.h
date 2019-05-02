@@ -31,26 +31,13 @@
 
 // Uncomment the following define if you wish to use the self-power sense feature 
 // and define the port, pin and tris for the power sense pin below:
-// #define USE_SELF_POWER_SENSE_IO
 #define tris_self_power     TRISAbits.TRISA2
-#if defined(USE_SELF_POWER_SENSE_IO)
-	#define self_power          PORTAbits.RA2
-#else
-	#define self_power          1
-#endif
+#define self_power          1
 
 // Uncomment the following define if you wish to use the bus-power sense feature 
 // and define the port, pin and tris for the power sense pin below:
-//#define USE_USB_BUS_SENSE_IO
 #define tris_usb_bus_sense  TRISAbits.TRISA1
-#if defined(USE_USB_BUS_SENSE_IO)
-	#define USB_BUS_SENSE       PORTAbits.RA1
-#else
-	#define USB_BUS_SENSE       1
-#endif
-
-// Uncomment the following line to make the output HEX of this project work with the MCHPUSB Bootloader    
-//#define PROGRAMMABLE_WITH_USB_MCHPUSB_BOOTLOADER
+#define USB_BUS_SENSE       1
 
 // Uncomment the following line to make the output HEX of this project work with the HID Bootloader
 #define PROGRAMMABLE_WITH_USB_HID_BOOTLOADER		
@@ -60,41 +47,29 @@
 // Oscillator frequency (48Mhz with a 20Mhz external oscillator)
 #define CLOCK_FREQ 48000000
 
-// Device Vendor Indentifier (VID) (0x04D8 is Microchip's VID)
-#define USB_VID	0x04D8
+// Device Vendor Identifier
+#define USB_VID	0xbeef
 
-// Device Product Indentifier (PID) (0x0042)
-#define USB_PID	0x0042
+// Device Product Identifier (PID)
+#define USB_PID	0xf00d
 
 // Manufacturer string descriptor
-#define MSDLENGTH	10
-#define MSD		'S','i','m','o','n',' ','I','n','n','s'
+#define MSDLENGTH	13
+#define MSD		'S','t','e','v','a','r','m','i','n','c', 'h', 'e', 't'
 
 // Product String descriptor
-#define PSDLENGTH	20
-#define PSD		'W','F','F',' ','G','e','n','e','r','i','c',' ','H','I','D',' ','d','e','m','o'
+#define PSDLENGTH	14
+#define PSD		'F','A','T',' ','P','A','N','T','A','L','O','O','N','S'
 
 // Device serial number string descriptor
 #define DSNLENGTH	7
-#define DSN		'W','F','F','_','3','.','0'
+#define DSN		'F','A','T','P','A','N','T'
 
 // Common useful definitions
 #define INPUT_PIN 1
 #define OUTPUT_PIN 0
 #define FLAG_FALSE 0
 #define FLAG_TRUE 1
-
-// Comment out the following line if you do not want the debug
-// feature of the firmware (saves code and RAM space when off)
-//
-// Note: if you use this feature you must compile with the large
-// memory model on (for 24-bit pointers) so that the sprintf()
-// function will work correctly.  If you do not require debug it's
-// recommended that you compile with the small memory model and 
-// remove any references to <strings.h> and sprintf().
-#define DEBUGON
-
-// PIC to hardware pin mapping and control macros
 
 // Led control macros
 #define mInitStatusLeds()		LATA &= 0b00000001; TRISA &= 0b00000001;
@@ -103,11 +78,5 @@
 #define mStatusLED0_off()		mStatusLED0 = 0;
 #define mStatusLED0_Toggle()	mStatusLED0 = !mStatusLED0;
 #define mStatusLED0_Get()       mStatusLED0
-
-// Switch macros
-#define mInitAllSwitches()  TRISAbits.TRISA1=1;
-#define mInitSwitch0()      TRISAbits.TRISA1=1;
-#define sw0                 PORTAbits.RA1
-
 
 #endif
