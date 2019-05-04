@@ -44,18 +44,15 @@
 // Uncomment either USB_POLLING or USB_INTERRUPT to set how the USB
 // device is updated
 #define USB_POLLING
-//#define USB_INTERRUPT
 
 // Set the USB pullup option for usb_device.h
 #define USB_PULLUP_OPTION USB_PULLUP_ENABLE
-//#define USB_PULLUP_OPTION USB_PULLUP_DISABLED
 
 // Use the internal USB transceiver module
 #define USB_TRANSCEIVER_OPTION USB_INTERNAL_TRANSCEIVER
 
 // Set either full-speed or low-speed USB device mode
 #define USB_SPEED_OPTION USB_FULL_SPEED
-//#define USB_SPEED_OPTION USB_LOW_SPEED
 
 // Option to enable auto-arming of the status stage of control transfers
 #define USB_ENABLE_STATUS_STAGE_TIMEOUTS
@@ -71,17 +68,7 @@
 #define USB_NUM_STRING_DESCRIPTORS 3
 
 // Enable/disable event handlers
-//#define USB_INTERRUPT_LEGACY_CALLBACKS
 #define USB_ENABLE_ALL_HANDLERS
-//#define USB_ENABLE_SUSPEND_HANDLER
-//#define USB_ENABLE_WAKEUP_FROM_SUSPEND_HANDLER
-//#define USB_ENABLE_SOF_HANDLER
-//#define USB_ENABLE_ERROR_HANDLER
-//#define USB_ENABLE_OTHER_REQUEST_HANDLER
-//#define USB_ENABLE_SET_DESCRIPTOR_HANDLER
-//#define USB_ENABLE_INIT_EP_HANDLER
-//#define USB_ENABLE_EP0_DATA_HANDLER
-//#define USB_ENABLE_TRANSFER_COMPLETE_HANDLER
 
 // Set device type to USB HID
 #define USB_USE_HID

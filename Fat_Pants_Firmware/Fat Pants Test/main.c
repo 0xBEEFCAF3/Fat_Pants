@@ -129,12 +129,6 @@ void Low_ISR (void)
 void highPriorityISRCode()
 {
 	// Application specific high-priority ISR code goes here
-	
-	#if defined(USB_INTERRUPT)
-		// Perform USB device tasks
-		USBDeviceTasks();
-	#endif
-
 }
 
 // Low-priority ISR handling function
