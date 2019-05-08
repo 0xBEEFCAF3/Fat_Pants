@@ -23,6 +23,7 @@ int main(void)
   }
   printf("belt located!\n");
   printf("Trying to fasten belt... ");
+  libusb_detach_kernel_driver(belt, 0);
   if (libusb_claim_interface(belt, 0) < 0){
     printf("failed to claim interface\n");
     return 1;
@@ -37,7 +38,6 @@ int main(void)
 	dim_value_int = atoi(read);
 	if ((dim_value_int >= 0) && (dim_value_int <= 255)){
 		dimming_bytes[1] = (unsigned char) dim_value_int;
-		printf("Sending value %u\n", dimming_bytes[1]);
 		libusb_interrupt_transfer(belt, 1, dimming_bytes, 2, &transferred, 0);
 	}
 	else{
