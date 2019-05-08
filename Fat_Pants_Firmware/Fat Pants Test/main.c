@@ -129,6 +129,13 @@ void Low_ISR (void)
 #pragma interrupt highPriorityISRCode
 void highPriorityISRCode()
 {
+    if (INTCONbits.TMR0IE && INTCONbits.TMR0IF) {
+        mStatusLED0_off();
+        TMR0H = 0;
+        TMR0L = 0;
+        INTCONbits.TMR0IF = 0;
+        return;
+    }
 	// Application specific high-priority ISR code goes here
 }
 
@@ -136,7 +143,6 @@ void highPriorityISRCode()
 #pragma interruptlow lowPriorityISRCode
 void lowPriorityISRCode()
 {
-	// Application specific low-priority ISR code goes here
 }
 
 void main(void)
@@ -145,9 +151,15 @@ void main(void)
 
     mStatusLED0_on();
     setLedOneDimness(0x64);
-    while(1);
-//    while(1)
-//    {
+    while(1)
+    {
+        int x = 0;
+        int i = 0;
+        for (; i < 10000; i++) {
+            x += 1;
+        }
+        mStatusLED0_on();
+
 //        #if defined(USB_POLLING)
 //			// If we are in polling mode the USB device tasks must be processed here
 //			// (otherwise the interrupt is performing this task)
@@ -155,7 +167,7 @@ void main(void)
 //        #endif
 //    	
 //        processUsbCommands();  
-//    }
+    }
 }
 
 static void initialisePic(void)
@@ -242,34 +254,36 @@ void processUsbCommands(void)
 //}
 
 
-void interrupt isr(void){
-    if(INTCONbits.T0IF == 1){
-        mStatusLED0_off();    
-    }
-}
+//void interrupt isr(void){
+//    if(INTCONbits.T0IF == 1){
+//        mStatusLED0_off();    
+//    }
+//}
 
 void setLedOneDimness(unsigned char pwm){
     
     T0CONbits.TMR0ON = 0;//turn off timer
-    T0CONbits.T08BIT = 1; //8 bit timer couter
+    T0CONbits.T08BIT = 1; //16 bit timer couter
     T0CONbits.T0CS = 0; //internal clock source
     T0CONbits.T0SE = 1; 
     T0CONbits.PSA = 0; //Declare we are using a prescaler 
-    //todo clear timer value
     INTCONbits.TMR0IE = 1;
     INTCONbits.TMR0IF = 0;
     TMR0H = 0;
     TMR0L = 0;
-    RCONbits.IPEN = 0;
+    RCONbits.IPEN = 1;
     INTCONbits.PEIE = 1;
-    INTCONbits.GIE = 1;
+    INTCON2bits.TMR0IP = 1;
+    T0CONbits.T0PS0 = 1; //256 prescaler
+    T0CONbits.T0PS1 = 1; //256 prescaler
+    T0CONbits.T0PS2 = 1; //256 prescaler
 
 
     T0CONbits.T0PS2 = 0b111; //256 prescaler
+    INTCONbits.GIE = 1;
     
     //lastly turn on the timer
     T0CONbits.TMR0ON = 1;//turn on timer
-
 }
 
 
