@@ -78,6 +78,8 @@ BOOL blinkStatusValid = FLAG_TRUE;
 #pragma config EBTR1    = OFF
 #pragma config EBTRB    = OFF
 
+unsigned char pulse_width = 0;
+
 // Private function prototypes
 static void initialisePic(void);
 void processUsbCommands(void);
@@ -85,7 +87,7 @@ void applicationInit(void);
 void USBCBSendResume(void);
 void highPriorityISRCode();
 void lowPriorityISRCode();
-void setLedOneDimness(unsigned char pwm);
+void initTimer0();
 
 // Remap vectors for compatibilty with Microchip USB boot loaders
 #define REMAPPED_RESET_VECTOR_ADDRESS			0x1000
@@ -129,8 +131,15 @@ void Low_ISR (void)
 #pragma interrupt highPriorityISRCode
 void highPriorityISRCode()
 {
+    static unsigned char interrupt_ctr = 0;
     if (INTCONbits.TMR0IE && INTCONbits.TMR0IF) {
-        mStatusLED0_off();
+        interrupt_ctr++;
+        if ((interrupt_ctr % 0xff) >= pulse_width) {
+            mStatusLED0_off();
+        }
+        else {
+            mStatusLED0_on();
+        }
         TMR0H = 0;
         TMR0L = 0;
         INTCONbits.TMR0IF = 0;
@@ -150,23 +159,16 @@ void main(void)
     initialisePic();
 
     mStatusLED0_on();
-    setLedOneDimness(0x64);
+    initTimer0();
     while(1)
     {
-        int x = 0;
-        int i = 0;
-        for (; i < 10000; i++) {
-            x += 1;
-        }
-        mStatusLED0_on();
-
-//        #if defined(USB_POLLING)
-//			// If we are in polling mode the USB device tasks must be processed here
-//			// (otherwise the interrupt is performing this task)
-//	        USBDeviceTasks();
-//        #endif
-//    	
-//        processUsbCommands();  
+        #if defined(USB_POLLING)
+			// If we are in polling mode the USB device tasks must be processed here
+			// (otherwise the interrupt is performing this task)
+	        USBDeviceTasks();
+        #endif
+    	
+        processUsbCommands();  
     }
 }
 
@@ -221,7 +223,7 @@ void processUsbCommands(void)
             case 0x81: //Get PWM
                 //we should expect an unsigned char on the recieve buffer
                 //Something between 0-100
-                //setLedOneDimness(ReceivedDataBuffer[1]); //Our command we send should be something like : 0x81 0xnn
+                pulse_width = ReceivedDataBuffer[1]; //Our command we send should be something like : 0x81 0xnn
                 break;
                 
             case 0x82:
@@ -260,14 +262,15 @@ void processUsbCommands(void)
 //    }
 //}
 
-void setLedOneDimness(unsigned char pwm){
-    
+
+void initTimer0(){
+    INTCONbits.GIE = 0;
     T0CONbits.TMR0ON = 0;//turn off timer
     T0CONbits.T08BIT = 1; //16 bit timer couter
     T0CONbits.T0CS = 0; //internal clock source
     T0CONbits.T0SE = 1; 
-    T0CONbits.PSA = 0; //Declare we are using a prescaler 
-    INTCONbits.TMR0IE = 1;
+    T0CONbits.PSA = 1; //Declare we are using a prescaler 
+    INTCONbits.TMR0IE = 0;
     INTCONbits.TMR0IF = 0;
     TMR0H = 0;
     TMR0L = 0;
@@ -278,8 +281,8 @@ void setLedOneDimness(unsigned char pwm){
     T0CONbits.T0PS1 = 1; //256 prescaler
     T0CONbits.T0PS2 = 1; //256 prescaler
 
-
     T0CONbits.T0PS2 = 0b111; //256 prescaler
+    INTCONbits.TMR0IE = 1;
     INTCONbits.GIE = 1;
     
     //lastly turn on the timer
