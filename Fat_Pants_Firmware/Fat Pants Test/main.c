@@ -28,10 +28,10 @@
 // Local includes
 #include "HardwareProfile.h"
 #include "./debug.h"
+#include <p18f2450.h>
 
 #include "./usb.h"
 #include "./usb_function_hid.h"
-
 // Ensure we have the correct target PIC device family
 #if !defined(__18F2450) && !defined(__18F4450)
 	#error "This firmware only supports either the PIC18F4450 or PIC18F2450 microcontrollers."
@@ -85,6 +85,7 @@ void applicationInit(void);
 void USBCBSendResume(void);
 void highPriorityISRCode();
 void lowPriorityISRCode();
+void setLedOneDimness(unsigned char pwm);
 
 // Remap vectors for compatibilty with Microchip USB boot loaders
 #define REMAPPED_RESET_VECTOR_ADDRESS			0x1000
@@ -143,16 +144,18 @@ void main(void)
     initialisePic();
 
     mStatusLED0_on();
-    while(1)
-    {
-        #if defined(USB_POLLING)
-			// If we are in polling mode the USB device tasks must be processed here
-			// (otherwise the interrupt is performing this task)
-	        USBDeviceTasks();
-        #endif
-    	
-        processUsbCommands();  
-    }
+    setLedOneDimness(0x64);
+    while(1);
+//    while(1)
+//    {
+//        #if defined(USB_POLLING)
+//			// If we are in polling mode the USB device tasks must be processed here
+//			// (otherwise the interrupt is performing this task)
+//	        USBDeviceTasks();
+//        #endif
+//    	
+//        processUsbCommands();  
+//    }
 }
 
 static void initialisePic(void)
@@ -202,7 +205,13 @@ void processUsbCommands(void)
             case 0x80:
 				mStatusLED0_Toggle();
             	break;
-            	
+            
+            case 0x81: //Get PWM
+                //we should expect an unsigned char on the recieve buffer
+                //Something between 0-100
+                //setLedOneDimness(ReceivedDataBuffer[1]); //Our command we send should be something like : 0x81 0xnn
+                break;
+                
             case 0x82:
 				// Get the LED state and put it in the send buffer
 				ToSendDataBuffer[0] = mStatusLED0_Get();
@@ -224,6 +233,46 @@ void processUsbCommands(void)
 }
 
 // USB Callback handling routines -----------------------------------------------------------
+
+//void __attribute__ ((__interrupt__, no_auto_psv)) _T0Interrupt(){
+//    //mStatusLED0_Toggle();
+//    mStatusLED0_off();
+//    //flag
+//    INTCONbits.TMR0IF = 0;
+//}
+
+
+void interrupt isr(void){
+    if(INTCONbits.T0IF == 1){
+        mStatusLED0_off();    
+    }
+}
+
+void setLedOneDimness(unsigned char pwm){
+    
+    T0CONbits.TMR0ON = 0;//turn off timer
+    T0CONbits.T08BIT = 1; //8 bit timer couter
+    T0CONbits.T0CS = 0; //internal clock source
+    T0CONbits.T0SE = 1; 
+    T0CONbits.PSA = 0; //Declare we are using a prescaler 
+    //todo clear timer value
+    INTCONbits.TMR0IE = 1;
+    INTCONbits.TMR0IF = 0;
+    TMR0H = 0;
+    TMR0L = 0;
+    RCONbits.IPEN = 0;
+    INTCONbits.PEIE = 1;
+    INTCONbits.GIE = 1;
+
+
+    T0CONbits.T0PS2 = 0b111; //256 prescaler
+    
+    //lastly turn on the timer
+    T0CONbits.TMR0ON = 1;//turn on timer
+
+}
+
+
 
 // Call back that is invoked when a USB suspend is detected
 void USBCBSuspend(void)
