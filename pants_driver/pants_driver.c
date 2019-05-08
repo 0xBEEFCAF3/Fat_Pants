@@ -1,11 +1,16 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include "libusb-1.0/libusb.h"
 
 int main(void)
 {
+  char read[4];
+  int dim_value_int;
   int r;
+  int transferred = 0;
   libusb_device_handle* belt;
+  unsigned char dimming_bytes[2] = {0x81, 0x00};
 
   r = libusb_init(NULL);
   if (r < 0)
@@ -23,13 +28,22 @@ int main(void)
     return 1;
   }
   printf("the belt has been secured!\n");
-  printf("Press [Enter] to toggle pants, or send [e] to exit the pants.\n");
-  unsigned char toggle_byte = 0x80;
-  int transferred = 0;
-  char read = 0;
+  printf("Type a decimal number between 0-255 (inclusive) to illuminate the pants.\n");
+  printf("[Ctrl-c] to exit the pants.\n");
 
-  while ((read = getc(stdin)) != 'e')
-          libusb_interrupt_transfer(belt, 1, &toggle_byte, 1, &transferred, 0);
+
+  while (1){
+  	fgets(read, 5, stdin);
+	dim_value_int = atoi(read);
+	if ((dim_value_int >= 0) && (dim_value_int <= 255)){
+		dimming_bytes[1] = (unsigned char) dim_value_int;
+		printf("Sending value %u\n", dimming_bytes[1]);
+		libusb_interrupt_transfer(belt, 1, dimming_bytes, 2, &transferred, 0);
+	}
+	else{
+		printf("Please enter decimal numbers between 0-255 (inclusive)\n");
+	}
+  }
 
   printf("Thank you for trying the pants!\n");
   libusb_exit(NULL);
